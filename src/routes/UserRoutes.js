@@ -14,9 +14,11 @@ const userRoutes = express.Router();
 // cria objeto da classe userController
 const userController = new UserController();
 
-
-// usa o URL para chamar outros
+// usa o URL para chamar o controller
 userRoutes.get("/v1/user/:id", userController.consultarPorId);
+userRoutes.post("/v1/user", userController.criar);
+userRoutes.put("/v1/user/:id", userController.atualizar);
+userRoutes.delete("/v1/user/:id", userController.deletar);
 
 // teste
 /* userRoutes.get("/v1/user", (request, response) => {
