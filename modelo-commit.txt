@@ -1,0 +1,24 @@
+# ARQUIVO MODELO PARA ESCREVER COMMIT
+
+modelo-commit
+git commit -m "texto" -m "descricao"
+
+------------------------------------------------
+
+> COMMIT REALIZADOS
+git commit -m "HomePage: criação." -m "Criação do componente HomePage.jsx."
+
+
+----------------
+
+FEITO
++ DESCRIÇÃO COMMIT +
+Criação da rota homepage.
+privatesRoutes
+userRoutes
+userController
+
+
+
+
+
