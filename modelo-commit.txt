@@ -1,12 +1,18 @@
 # ARQUIVO MODELO PARA ESCREVER COMMIT
 
+FALTA FAZER
+USER:
+REQUISITO 04 - 400 E 401
+
++++++++++++++
+
 modelo-commit
 git commit -m "texto" -m "descricao"
 
 ------------------------------------------------
 
 > COMMIT REALIZADOS
-git commit -m "HomePage: criação." -m "Criação do componente HomePage.jsx."
+git commit -m "Atualização do projeto" -m "Mudança na estrutura do projeto, pasta api > src. Rota até o useController está funcionando."
 
 
 ----------------
@@ -17,6 +23,8 @@ Criação da rota homepage.
 privatesRoutes
 userRoutes
 userController
+
+Criação do banco de dados.
 
 
 
