@@ -14,7 +14,7 @@ git commit -m "texto" -m "descricao"
 > COMMIT REALIZADOS
 git commit -m "Atualização do projeto" -m "Mudança na estrutura do projeto, pasta api > src. Rota até o useController está funcionando."
 
-
+git commit -m "User CRUD e BD" -m "Criação do banco de dados. User CRUD (Falta alguns response status)"
 ----------------
 
 FEITO
@@ -25,6 +25,29 @@ userRoutes
 userController
 
 Criação do banco de dados.
+
+
+
+http://localhost:3000/category/search?name=john&phone=878
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
