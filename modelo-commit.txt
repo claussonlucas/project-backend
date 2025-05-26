@@ -4,6 +4,10 @@ FALTA FAZER
 USER:
 REQUISITO 04 - 400 E 401
 
+PRODUCT
+use_in_menu está null quando não envia na requisição
+
+
 +++++++++++++
 
 modelo-commit
@@ -21,26 +25,13 @@ git commit -m "Category CRUD e BD, sem requisito 01" -m "Category CRUD, falta o 
 
 FEITO
 + DESCRIÇÃO COMMIT +
-Criação da rota homepage.
-privatesRoutes
-userRoutes
-userController
-
-Criação do banco de dados.
+Product CRUD e BD.
 
 
 
-http://localhost:3000/v1/category
-/search?limit=-1&page=1&fields=name,slug&use_in_menu=true
 
-ex.:
-/search?fields=name,slug
 
-const query = request.query;
 
-let data = query.fields;
-
-atributes: [data]  // [name, slug]
 
 
 

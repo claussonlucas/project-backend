@@ -15,10 +15,11 @@ const CategoryRoutes = express.Router();
 const categoryController = new CategoryController();
 
 // usa o URL para chamar o controller
-CategoryRoutes.get("/v1/category/:id", categoryController.consultarPorId);
-CategoryRoutes.post("/v1/category", categoryController.criar);
-CategoryRoutes.put("/v1/category/:id", categoryController.atualizar);
-CategoryRoutes.delete("/v1/category/:id", categoryController.deletar);
+CategoryRoutes.get("/v1/category/search", categoryController.toListAll);
+CategoryRoutes.get("/v1/category/:id", categoryController.toListById);
+CategoryRoutes.post("/v1/category", categoryController.toCreate);
+CategoryRoutes.put("/v1/category/:id", categoryController.toUpdate);
+CategoryRoutes.delete("/v1/category/:id", categoryController.toDelete);
 
 // exporta arquivo
 module.exports = CategoryRoutes;

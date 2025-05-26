@@ -10,7 +10,14 @@ const connection = require('../config/connection');
 
 // cria a classe
 class CategoryModel extends Model {
-
+    static associate({ProductModel, ProdCategModel}) {
+        CategoryModel.belongsToMany(ProductModel, {
+            through: ProdCategModel,
+            foreignKey: 'category_id',
+            otherKey: 'product_id',
+            as: 'products'
+        });
+    }
 }
 
 //
@@ -28,8 +35,9 @@ CategoryModel.init(
         },
         // coluna use_in_menu
         use_in_menu: {
-            type: DataTypes.BOOLEAN(0),
-            allowNull: true
+            type: DataTypes.BOOLEAN,
+            allowNull: true,
+            defaultValue: 0
         },
     },
     {
