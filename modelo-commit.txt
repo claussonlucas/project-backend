@@ -4,6 +4,10 @@ FALTA FAZER
 USER:
 REQUISITO 04 - 400 E 401
 
+PRODUCT
+use_in_menu está null quando não envia na requisição
+
+
 +++++++++++++
 
 modelo-commit
@@ -15,20 +19,20 @@ git commit -m "texto" -m "descricao"
 git commit -m "Atualização do projeto" -m "Mudança na estrutura do projeto, pasta api > src. Rota até o useController está funcionando."
 
 git commit -m "User CRUD e BD" -m "Criação do banco de dados. User CRUD (Falta alguns response status)"
+
+git commit -m "Category CRUD e BD, sem requisito 01" -m "Category CRUD, falta o requisito 01 (Falta alguns response status). Criação do banco de dados."
 ----------------
 
 FEITO
 + DESCRIÇÃO COMMIT +
-Criação da rota homepage.
-privatesRoutes
-userRoutes
-userController
-
-Criação do banco de dados.
+Product CRUD e BD.
 
 
 
-http://localhost:3000/category/search?name=john&phone=878
+
+
+
+
 
 
 

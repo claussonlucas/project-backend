@@ -17,3 +17,6 @@ const connection = new Sequelize({
 
 // exporta
 module.exports = connection;
+
+// para uso no terminal
+// node src/config/connection.js

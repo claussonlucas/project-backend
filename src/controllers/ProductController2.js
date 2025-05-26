@@ -1,13 +1,18 @@
-// CategoryController.js
-// data: 24/05/2025
+// ProductController.js
+// data: 25/05/2025
+
 
 // importa arquivos models
+const ProductModel = require("../models/ProductModel");
 const CategoryModel = require("../models/CategoryModel");
+const ProdCategModel = require("../models/ProdCategModel");
+const ImagesModel = require("../models/ImagesModel");
+const OptionModel = require("../models/OptionModel");
 
 // cria uma classe
-class CategoryController {
+class ProductController {
     constructor() {
-        
+        ProductModel.associate({CategoryModel, ProdCategModel,ImagesModel, OptionModel});
     }
 
     // método get
@@ -30,7 +35,7 @@ class CategoryController {
         //}
         
         
-        const data = await CategoryModel.findAll({ limit: 2 });
+        const data = await ProductModel.findAll({ limit: 2 });
 
         return response.status(200).send(data);
     }
@@ -38,15 +43,20 @@ class CategoryController {
     // método get
     async toListById(request, response) {
         const id = request.params.id;
-
         try {
-            const data = await CategoryModel.findByPk(id, {
-                attributes: ["id", "name", "slug", "use_in_menu"]
+            const data = await ProductModel.findByPk(id, {
+                attributes: ["id", "enabled", "name", "slug", "stock", "description", "price", "price_with_discount"]//,
+                // inclui dados da outra tabela
+                //include: {
+                    // define qual o model
+                /*     model: ImagesModel,
+                    attributes: ["id", "product_id"]
+                } */
             });
 
             // se no URL tiver id que não tem na tabela retorna 404
             if (data === null) {
-                return response.status(404).send("Categoria não existe");
+                return response.status(404).send("Produto não existe");
             }
 
             return response.status(200).json(data);
@@ -59,45 +69,67 @@ class CategoryController {
 
     // método post
     async toCreate(request, response) {
+
         const body = request.body;
-
-        // try: realiza os códigos
-        try {
-            // FAZER 401
-
-            // verifica se falta item no corpo da requisição
-            if (body.name == undefined || body.slug == undefined) {
+                    // verifica se falta item no corpo da requisição
+            if (body.name == undefined || body.slug == undefined ||
+                body.price == undefined || body.price_with_discount == undefined) {
                 return response.status(400).send("Erro 400: Erro na requisição. Falta dados.");
             }
 
             // envia para BD
-            await CategoryModel.create(body);
-            
+            //await ImagesModel.create();
+            await ProductModel.create(body, {
+                include: [
+                    {
+                        through: ProdCategModel,
+                        model: CategoryModel, as: 'category'
+                    },
+                    {model: ImagesModel, as: 'images'},
+                    {model: OptionModel, as: 'options'}
+                ]
+            });
+                        
             return response.status(201).json({
-                    message: "Categoria criada com sucesso"
+                    message: "Produto criado com sucesso"
                 });
-        } catch (error) {
+        // try: realiza os códigos
+        //try {
+            // FAZER 401
+
+            // verifica se falta item no corpo da requisição
+//            if (body.name == undefined || body.slug == undefined ||
+//                body.price == undefined || body.price_with_discount == undefined) {
+//                return response.status(400).send("Erro 400: Erro na requisição. Falta dados.");
+//            }
+
+            // envia para BD
+//            await ProductModel.create(body, {include: ImagesModel});
+            
+//            return response.status(201).json({
+//                    message: "Produto criado com sucesso"
+//                });
+//        } catch (error) {
             // catch: caso ocorra erro no try, envia status 500 (erro no servidor)
-            return response.status(500).send("500: ERRO NO SERVIDOR!");
-        }
+            //return response.status(500).send("500: ERRO NO SERVIDOR!");
+//        }
     }
 
     // método put
     async toUpdate(request, response) {
         const id = request.params.id;
         const body = request.body;
-
         try {
             // FAZER 401
 
             // verifica se falta item no corpo da requisição
             if (body.name == undefined || body.slug == undefined ||
-                body.use_in_menu == undefined) {
+                body.price == undefined || body.price_with_discount == undefined) {
                 return response.status(400).send("Erro 400: Erro na requisição. Falta dados.");
             }
 
             // procura na tabela se existe a linha de acordo com o id
-            const search = await CategoryModel.findOne({ where: {id} });
+            const search = await ProductModel.findOne({ where: {id} });
 
             // se a linha da tabela não existir
             if (search === null) {
@@ -105,7 +137,7 @@ class CategoryController {
             }
 
             // atualiza a linha no BD
-            await CategoryModel.update(body, { where: {id} });
+            await ProductModel.update(body, { where: {id} });
             return response.status(204).send("");
             
         } catch (error) {
@@ -120,13 +152,13 @@ class CategoryController {
         try {
             // FAZER 401
 
-            const search = await CategoryModel.findOne({ where: {id} });
+            const search = await ProductModel.findOne({ where: {id} });
 
             if (search === null) {
                 return response.status(404).send("404: Categoria não existe");
             }
 
-            await CategoryModel.destroy({ where: {id}});
+            await ProductModel.destroy({ where: {id}});
             return response.status(204).send("");
         } catch (error) {
             return response.status(500).send("500: ERRO NO SERVIDOR!");
@@ -135,4 +167,4 @@ class CategoryController {
 }
 
 // exporta arquivo
-module.exports = CategoryController;
+module.exports = ProductController;
