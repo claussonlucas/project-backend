@@ -83,14 +83,14 @@ class ProductController {
                 include: [
                     {
                         through: ProdCategModel,
-                        model: CategoryModel, as: 'category'
+                        model: CategoryModel, as: 'categories'
                     },
                     {model: ImagesModel, as: 'images'},
                     {model: OptionModel, as: 'options'}
                 ]
             });
 
-            post.setCategoryModel(category_id);
+            post.setCategories(category_id);
              // Se precisar associar categorias (many-to-many)
         /* if (body.category_id && body.category_id.length) {
             const product = await ProductModel.findOne({
@@ -160,10 +160,18 @@ class ProductController {
     // método delete
     async toDelete(request, response) {
         const id = request.params.id;
-        try {
+        const search = await ProductModel.findOne({ where: {id} });
+
+        if (search === null) {
+            return response.status(404).send("404: Categoria não existe");
+        }
+
+        await ProductModel.destroy({ where: {id}});
+        return response.status(204).send("");
+        //try {
             // FAZER 401
 
-            const search = await ProductModel.findOne({ where: {id} });
+/*             const search = await ProductModel.findOne({ where: {id} });
 
             if (search === null) {
                 return response.status(404).send("404: Categoria não existe");
@@ -173,7 +181,7 @@ class ProductController {
             return response.status(204).send("");
         } catch (error) {
             return response.status(500).send("500: ERRO NO SERVIDOR!");
-        }
+        } */
     }
 }
 

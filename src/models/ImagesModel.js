@@ -29,7 +29,8 @@ ImagesModel.init(
             references: {
                 model: ProductModel,
                 key: 'id'
-            }
+            },
+            onDelete: 'CASCADE'
         },
         // coluna enabled
         enabled: {

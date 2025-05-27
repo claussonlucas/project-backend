@@ -12,27 +12,40 @@ class CategoryController {
 
     // método get
     async toListAll(request, response) {
-        const query = request.query;
-        
-        let fulldata = "";
-        
-        let dados = query;
-        console.log(dados);
+        let query = request.query;
+        let data = {};
+        console.log('inicio');
+        console.log(query);
 
-        let limite = query.limit;
-        console.log(limite);
+        console.log(query.fields);
+        console.log(query.use_in_menu);
 
-        //if (limite === "-1") {
-            //limite = 0;
-            /* console.log("certo");
-            fulldata += `{ limit: ${limite} }`;
-            console.log(fulldata); */
-        //}
-        
-        
-        const data = await CategoryModel.findAll({ limit: 2 });
+        if (query.fields === undefined) {
+            query = ['name', 'slug', 'use_in_menu'];
+
+            data = await CategoryModel.findAll({
+                attributes: query
+            });
+        } else {
+            query = query.fields.split(',');
+            
+            data = await CategoryModel.findAll({
+                attributes: query
+            });
+        }
+        console.log(query.fields);
+        console.log(query.use_in_menu);
+        // use_in_menu
+        if (query.use_in_menu !== undefined) {
+            
+            data = await CategoryModel.findAll({ where: {use_in_menu: 1} }, {
+                attributes: query
+            });
+            
+        }
 
         return response.status(200).send(data);
+        
     }
 
     // método get
