@@ -12,40 +12,46 @@ class CategoryController {
 
     // método get
     async toListAll(request, response) {
-        let query = request.query;
-        let data = {};
+        const query = request.query;
+        //console.log('inicio: ');
+        //console.log(query);
+        //console.log(query.fields);
+        //console.log(query.use_in_menu);
+
+        let data = []; // lista de obj. que vem do BD
+        let queryFields = query.fields; // query fields
+        let queryUseMenu = query.use_in_menu // query use_in_menu
         console.log('inicio');
         console.log(query);
 
-        console.log(query.fields);
-        console.log(query.use_in_menu);
+        //console.log('Depois de guardar em variveis: ');
+        //console.log(queryFields);
+        //console.log(queryUseMenu);
 
-        if (query.fields === undefined) {
-            query = ['name', 'slug', 'use_in_menu'];
-
-            data = await CategoryModel.findAll({
-                attributes: query
-            });
+        if (queryFields === undefined) {
+            // se query fields não for digitado
+            queryFields = ['name', 'slug', 'use_in_menu'];
         } else {
-            query = query.fields.split(',');
-            
-            data = await CategoryModel.findAll({
-                attributes: query
-            });
+            // se query fields for digitado, será dividido
+            queryFields = queryFields.split(',');    
         }
-        console.log(query.fields);
-        console.log(query.use_in_menu);
-        // use_in_menu
-        if (query.use_in_menu !== undefined) {
-            
+        
+        //console.log(queryFields);
+        //console.log(queryUseMenu);
+        
+        if (queryUseMenu === undefined) {
+            // os dados que vem do BD vão para a lista data
+            data = await CategoryModel.findAll({
+                attributes: queryFields
+            });      
+        } else {
+            // se tiver use_in_menu no URL, vem apenas os dados que use_in_menu = 1
             data = await CategoryModel.findAll({ where: {use_in_menu: 1} }, {
-                attributes: query
-            });
-            
+                attributes: queryFields // continua usando o queryFields
+            }); 
         }
 
-        return response.status(200).send(data);
-        
+        return response.status(200).send(data);     
     }
 
     // método get
