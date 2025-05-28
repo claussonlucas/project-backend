@@ -12,7 +12,8 @@ OptionModel.init (
             references: {
                 model: ProductModel,
                 key: 'id'
-            }
+            },
+            onDelete: 'CASCADE'
         },
         title: {
             type: DataTypes.STRING(45),

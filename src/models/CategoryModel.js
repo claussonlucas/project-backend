@@ -10,14 +10,14 @@ const connection = require('../config/connection');
 
 // cria a classe
 class CategoryModel extends Model {
-    static associate({ProductModel, ProdCategModel}) {
+/*     static associate({ProductModel, ProdCategModel}) {
         CategoryModel.belongsToMany(ProductModel, {
             through: ProdCategModel,
             foreignKey: 'category_id',
             otherKey: 'product_id',
             as: 'products'
         });
-    }
+    } */
 }
 
 //
@@ -43,7 +43,7 @@ CategoryModel.init(
     {
         sequelize: connection,
         tableName: "category",
-        timestamps: true
+        timestamps: false
     }
 );
 

@@ -10,7 +10,7 @@ const connection = require('../config/connection');
 
 // usada na foreigner key
 const ProductModel = require('./ProductModel');
-const CategoryModel = require("../models/CategoryModel");
+const CategoryModel = require("./CategoryModel");
 
 // cria a classe
 class ProdCategModel extends Model {
@@ -27,7 +27,8 @@ ProdCategModel.init(
             references: {
                 model: ProductModel,
                 key: 'id'
-            }
+            },
+            onDelete: 'CASCADE'
         },
         // coluna category_id
         category_id: {
@@ -37,7 +38,8 @@ ProdCategModel.init(
             references: {
                 model: CategoryModel,
                 key: 'id'
-            }
+            },
+            onDelete: 'CASCADE'
         }
     },
     {
