@@ -13,14 +13,43 @@ class CategoryController {
     // método get
     async toListAll(request, response) {
         const query = request.query;
+        const queryLimit = query.limit;
+        const queryPage = query.page; // página com 12 itens
+        let queryFields = query.fields; // query fields
+        let queryUseMenu = query.use_in_menu // query use_in_menu
+        let data = []; // lista de obj. que vem do BD
+        let standardLimit = 12; // certo 12
+        
+
+        // query limit
+        if(queryLimit === undefined) {
+            data = await CategoryModel.findAll({ limit: standardLimit });
+        } else if(queryLimit == -1) {
+            data = await CategoryModel.findAll();
+        } else {
+            // limit = 8 / page = 1 => offset: (8 * 1) - 8 = 0
+            data = await CategoryModel.findAll({ offset: (queryLimit * queryPage) - queryLimit
+                                                , limit: queryLimit });
+        }
+        //console.log('data: ');
+        //console.log(data);
+
+        //  mostrar data do BD + total + limit + page
+        data.total = await CategoryModel.count();
+        data.limit = queryLimit;
+        data.page = queryPage;
+
+        //console.log('data: ');
+        //console.log(data);
+        
+        //return response.status(200).send(data);  
+        // fim da lógica limit e page
+        
         //console.log('inicio: ');
         //console.log(query);
         //console.log(query.fields);
         //console.log(query.use_in_menu);
 
-        let data = []; // lista de obj. que vem do BD
-        let queryFields = query.fields; // query fields
-        let queryUseMenu = query.use_in_menu // query use_in_menu
         console.log('inicio');
         console.log(query);
 
