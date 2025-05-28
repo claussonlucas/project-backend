@@ -18,26 +18,74 @@ class ProductController {
     // método get
     async toListAll(request, response) {
         const query = request.query;
+        // se URL não tem limit, vai ser um NaN, e retorna undefined
+        // Number(): converte o query string em número
+        let queryLimit = isNaN(Number(query.limit)) ? undefined : Number(query.limit);
+        let queryPage = isNaN(Number(query.page)) ? 1 : Number(query.page); // página com 12 itens
+        let queryFields = query.fields; // query fields
+        let queryMatch = query.match // query match
+        const queryCategoryId = query.category_id.split(','); // por ser lista precisa dividir
+        let data = []; // lista de obj. que vem do BD
+        let standardLimit = 5; // padrão 12
         
-        let fulldata = "";
-        
-        let dados = query;
-        console.log(dados);
+        console.log("queryCategoryId: ", queryCategoryId);
 
-        let limite = query.limit;
-        console.log(limite);
+        // verifica se tem query fields
+        if (queryFields === undefined) {
+            // se query fields não for digitado
+            queryFields = ['name', 'slug', 'use_in_menu'];
+        } else {
+            // se query fields for digitado, será dividido
+            queryFields = queryFields.split(',');
+        }
 
-        //if (limite === "-1") {
-            //limite = 0;
-            /* console.log("certo");
-            fulldata += `{ limit: ${limite} }`;
-            console.log(fulldata); */
-        //}
-        
-        
-        const data = await ProductModel.findAll({ limit: 2 });
+        // query limit
+        if(queryLimit === undefined) {
+            if (queryUseMenu == "true") {
+                queryLimit = standardLimit
+                data = await CategoryModel.findAll({ limit: queryLimit, where: { name: queryMatch, include:{ through: ProdCategModel, model: CategoryModel, category_id: queryCategoryId },
+                    attributes: queryFields });
 
-        return response.status(200).send(data);
+            } else {
+                queryLimit = standardLimit
+                data = await CategoryModel.findAll({ limit: queryLimit, attributes: queryFields });
+            }
+
+        } else if(queryLimit == -1) {
+            //data = await CategoryModel.findAll();
+            if (queryUseMenu == "true") {
+                data = await CategoryModel.findAll({ where: { use_in_menu: 1 },
+                    attributes: queryFields });
+
+            } else {
+                data = await CategoryModel.findAll({ attributes: queryFields });
+            }
+
+        } else {
+            if (queryUseMenu == "true") {
+                // limit = 3 / page = 1 => offset: (3 * 1) - 3 = 0
+                let newOffset = ((queryLimit * queryPage) - queryLimit);
+                data = await CategoryModel.findAll({ offset: newOffset, limit: queryLimit,
+                    where: { use_in_menu: 1 }, attributes: queryFields });
+
+            } else {
+                let newOffset = ((queryLimit * queryPage) - queryLimit);
+                data = await CategoryModel.findAll({ offset: newOffset, limit: queryLimit,
+                    attributes: queryFields });
+            }
+        }
+
+        console.log("DATA: ", data);
+        console.log("DATA.NAME: ", data[0].dataValues.name);
+        console.log("DATA TYPE OF: ", typeof data);
+
+        //  mostrar total de linhas do BD
+        const datatotal = await CategoryModel.count();
+
+        //console.log("antes do return: ", data);
+        const obj = {"data": data, "Total": datatotal, "Limit": queryLimit, "Page": queryPage}
+
+        return response.status(200).send(obj);
     }
 
     // método get
