@@ -25,6 +25,7 @@ class ProductController {
         let queryFields = query.fields; // query fields
         let queryMatch = query.match // query match
         const queryCategoryId = query.category_id.split(','); // por ser lista precisa dividir
+        const queryPriceRange = query.price_range.split('-');
         let data = []; // lista de obj. que vem do BD
         let standardLimit = 5; // padrão 12
         
@@ -43,7 +44,7 @@ class ProductController {
         if(queryLimit === undefined) {
             if (queryUseMenu == "true") {
                 queryLimit = standardLimit
-                data = await CategoryModel.findAll({ limit: queryLimit, where: { name: queryMatch, include:{ through: ProdCategModel, model: CategoryModel, category_id: queryCategoryId },
+                data = await CategoryModel.findAll({ limit: queryLimit, where: { name: queryMatch, include:{ through: ProdCategModel, model: CategoryModel, category_id: queryCategoryId }, [Op.between]: queryPriceRange,
                     attributes: queryFields });
 
             } else {
