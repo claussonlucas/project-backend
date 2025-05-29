@@ -79,7 +79,7 @@ class CategoryController {
 
         //  mostrar total de linhas do BD
         const datatotal = await CategoryModel.count();
-
+        
         //console.log("antes do return: ", data);
         const obj = {"data": data, "Total": datatotal, "Limit": queryLimit, "Page": queryPage}
 

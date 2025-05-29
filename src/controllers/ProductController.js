@@ -44,7 +44,15 @@ class ProductController {
         if(queryLimit === undefined) {
             if (queryUseMenu == "true") {
                 queryLimit = standardLimit
-                data = await CategoryModel.findAll({ limit: queryLimit, where: { name: queryMatch, include:{ through: ProdCategModel, model: CategoryModel, category_id: queryCategoryId }, [Op.between]: queryPriceRange,
+                data = await CategoryModel.findAll({ limit: queryLimit,
+                    where: {
+                        name: queryMatch,
+                        include: {
+                            through: ProdCategModel,
+                            model: CategoryModel,
+                            category_id: queryCategoryId
+                        },
+                        [Op.between]: queryPriceRange},
                     attributes: queryFields });
 
             } else {
@@ -94,13 +102,19 @@ class ProductController {
         const id = request.params.id;
         try {
             const data = await ProductModel.findByPk(id, {
-                attributes: ["id", "enabled", "name", "slug", "stock", "description", "price", "price_with_discount"]//,
+                attributes: ["id", "enabled", "name", "slug", "stock", "description", "price", "price_with_discount"],
                 // inclui dados da outra tabela
-                //include: {
-                    // define qual o model
-                /*     model: ImagesModel,
-                    attributes: ["id", "product_id"]
-                } */
+                include: [
+                    {through: ProdCategModel , attributes: ["category_id"],
+                        model: CategoryModel, as: 'categories', attributes: ["id"]}
+/*
+                        {
+                            through: ProdCategModel,
+                        model: ProdCategModel, attributes: ['category_id']
+                    },
+                    {model: ImagesModel, as: 'images', attributes: ["id", "path"]},
+                    {model: OptionModel, as: 'options', attributes: ["id", "product_id", "title", "shape", "radius", "type", "values"]} */
+                ]
             });
 
             // se no URL tiver id que não tem na tabela retorna 404
@@ -112,6 +126,8 @@ class ProductController {
 
         } catch (error) {
             // catch: caso ocorra erro no try, envia status 500 (erro no servidor)
+            console.log(error);
+            
             return response.status(500).send("500: ERRO NO SERVIDOR!");
         }
     }

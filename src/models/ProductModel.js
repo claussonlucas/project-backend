@@ -81,6 +81,8 @@ ProductModel.init(
     }
 );
 
+//connection here
+
 // exporta
 module.exports = ProductModel;
 
