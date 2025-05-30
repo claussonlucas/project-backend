@@ -3,11 +3,15 @@
 
 //console.log("Server working...");
 
+// Biblioteca Dotenv
+require('dotenv').config();
 // biblioteca express
 const express = require('express');
 
+
 // Importa rotas criadas
-const PrivatesRoutes = require('./routes/PrivatesRoutes');
+const PrivatesRoutes = require('./src/routes/PrivatesRoutes');
+const PublicRoutes = require('./src/routes/PublicRoutes');
 
 // host e port
 const host = "localhost";
@@ -22,14 +26,14 @@ app.get("/", (request, response) => {
     return response.status(200).send("HomePage");
 });
 
-// rotas publicas
-
-// rotas privadas
-app.use(PrivatesRoutes);
-
 /* app.get("*", (request, response) => {
     return response.status(404).send("Página não encontrada");
 }); */
+
+// rotas publicas
+app.use(PublicRoutes);
+// rotas privadas
+app.use(PrivatesRoutes);
 
 // Escuta eventos
 app.listen(port, host, () => {

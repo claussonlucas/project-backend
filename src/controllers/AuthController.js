@@ -4,17 +4,23 @@
 // importa model
 const UserModel = require("../models/UserModel");
 
+// Biblioteca Crypto-js
+const MD5 = require('crypto-js/md5');
+
 class AuthController {
-    async login(username, password) {
+    async login(email, password) {
         const data = await UserModel.findAll({
             where: {
-                username: username,
-                password: password
+                email: email,
+                password: MD5(password).toString() // criptografa
             }
         })
 
-        if(dados.length) {
-            return dados[0];
+        //console.log("AUTH data: ", data);
+        //console.log("data.length: ", data.length);
+        if(data.length) {
+            //console.log("data[0]: ", data[0]);
+            return data[0];
         }
         return null;
     }
