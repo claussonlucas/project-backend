@@ -44,7 +44,9 @@ ProdCategModel.init(
     },
     {
         sequelize: connection,
-        tableName: "prod_categ",
+        modelName: "prod_Categ",
+        freezeTableName: true,
+        //tableName: "prod_categ",
         timestamps: false
     }
 );
