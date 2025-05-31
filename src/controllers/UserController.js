@@ -5,6 +5,9 @@
 const { Sequelize } = require("sequelize");
 const UserModel = require("../models/UserModel");
 
+// Biblioteca Crypto-js
+const MD5 = require('crypto-js/md5');
+
 // cria uma classe
 class UserController {
     constructor() {
@@ -37,6 +40,11 @@ class UserController {
     // método post
     async toCreate(request, response) {
         const body = request.body;
+        // criptografa as senhas, e converte em string
+        const criptoPassword = MD5(body.password).toString();
+        const criptoConfirmPassword = MD5(body.confirmPassword).toString();
+        body.password = criptoPassword;
+        body.confirmPassword = criptoConfirmPassword;
 
         //console.log(body);
         //console.log(body.firstname);
@@ -45,8 +53,9 @@ class UserController {
         try {
             // verifica se falta item no corpo da requisição
             if (body.firstname == undefined || body.surname == undefined
-                || body.email == undefined || body.password == undefined) {
-                return response.status(400).send("Erro 400: Erro na requisição. Falta dados.");
+                || body.email == undefined || body.password == undefined ||
+                body.confirmPassword == undefined) {
+                return response.status(400).send("Erro 400: Erro na requisição. Faltam dados.");
             }
 
             // se senhas estiverem diferentes

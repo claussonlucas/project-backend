@@ -15,10 +15,9 @@ const userRoutes = express.Router();
 const userController = new UserController();
 
 // usa o URL para chamar o controller
-//userRoutes.get("/v1/user/:id", userController.toListById);
-userRoutes.post("/v1/user", userController.toCreate);
-//userRoutes.put("/v1/user/:id", userController.toUpdate);
-//userRoutes.delete("/v1/user/:id", userController.toDelete);
+userRoutes.get("/v1/user/:id", userController.toListById);
+userRoutes.put("/v1/user/:id", userController.toUpdate);
+userRoutes.delete("/v1/user/:id", userController.toDelete);
 
 // teste
 /* userRoutes.get("/v1/user", (request, response) => {
