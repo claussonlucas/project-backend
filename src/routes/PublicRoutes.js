@@ -39,7 +39,7 @@ PublicRoutes.post('/v1/user/token', async (request, response) => {
       id: data.id,
       email: data.email,
       firstname: data.firstname,
-      exp: Math.floor(Date.now() / 1000) + (60 * 5) // expira em 5 min.
+      exp: Math.floor(Date.now() / 1000) + (60 * 15) // expira em 15 min.
     }
 
     console.log("Chave JWT:", process.env.KEY);

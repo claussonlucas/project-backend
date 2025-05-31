@@ -3,8 +3,6 @@
 
 //console.log("Server working...");
 
-// Biblioteca Dotenv
-require('dotenv').config();
 // biblioteca express
 const express = require('express');
 
