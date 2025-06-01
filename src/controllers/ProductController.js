@@ -34,8 +34,22 @@ class ProductController {
         //const queryPriceRange = query.price_range.split('-');
         let data = []; // lista de obj. que vem do BD
         let standardLimit = 5; // padrão 12
+        let newOffset = 0; // usado no offset
+        let whereMatch = ' '; // usado no where (para queryMatch)
         
         console.log("queryMatch: ", queryMatch);
+
+        // verifica se tem queryLimit
+        if (queryLimit === undefined) {
+            // se query fields não for digitado
+            queryLimit = standardLimit;
+        } else if (queryLimit == -1) {
+            // número alto para mostrar todos
+            queryLimit = 1000;
+        } else {
+            // limit = 3 / page = 1 => offset: (3 * 1) - 3 = 0
+            newOffset = ((queryLimit * queryPage) - queryLimit);
+        }
 
         // verifica se tem query fields
         if (queryFields === undefined) {
@@ -46,95 +60,49 @@ class ProductController {
             queryFields = queryFields.split(',');
         }
 
-        // query limit
-        if(queryLimit === undefined) {
-            if (queryUseMenu == "true") {
-                queryLimit = standardLimit
-                data = await ProductModel.findAll({ limit: queryLimit,
-                    where: {
-                        name: queryMatch,
-                        include: {
-                            through: ProdCategModel,
-                            model: CategoryModel,
-                            category_id: queryCategoryId
-                        },
-                        [Op.between]: queryPriceRange},
-                    attributes: queryFields });
-
-            } else {
-                queryLimit = standardLimit
-                data = await ProductModel.findAll({ limit: queryLimit, attributes: queryFields });
-            }
-
-        } else if(queryLimit == -1) {
-            //data = await CategoryModel.findAll();
-            if (queryMatch !== undefined) {
-                data = await ProductModel.findAll({
-                    where:  {
-                        [Op.or]: [{ name: queryMatch }, { description: queryMatch }]
-                    },
-                    attributes: queryFields,
-                    include: [
-                        {
-                            model: ProdCategModel, as: 'category_id', attributes: ["category_id"]
-                        },
-                        {model: ImagesModel, as: 'images', attributes: ["id", ["path", 'content']]},
-                        {model: OptionModel, as: 'options'}
-                    ]
-                });
-
-            } else {
-                // AQUI >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-                data = await ProductModel.findAll({
-                    attributes: queryFields,
-                    include: [
-                        {
-                            model: ProdCategModel, as: 'category_id', attributes: ["category_id"]
-                        }
-                    ]
-                });
-            }
-
+        // verifica se tem query match
+        if (queryMatch === undefined) {
+            // se query fields não for digitado
+            whereMatch = "";
         } else {
-            if (queryUseMenu == "true") {
-                // limit = 3 / page = 1 => offset: (3 * 1) - 3 = 0
-                let newOffset = ((queryLimit * queryPage) - queryLimit);
-                data = await ProductModel.findAll({ offset: newOffset, limit: queryLimit,
-                    where: { use_in_menu: 1 }, attributes: queryFields,
-                    include: [
-                        {
-                            //model: ProdCategModel , attributes: ["category_id"],
-                            //through: ProdCategModel , attributes: ["category_id"],
-                            model: CategoryModel, as: 'categories', attributes: ["id"]
-                        }
-                    ]
-                });
-
-            } else {
-                let newOffset = ((queryLimit * queryPage) - queryLimit);
-                data = await ProductModel.findAll({ offset: newOffset, limit: queryLimit,
-                    attributes: queryFields,
-                    include: [
-                        {
-                            model: ProdCategModel, attributes: ["category_id"]
-                            //through: ProdCategModel , attributes: ["category_id"],
-                            //model: CategoryModel, as: 'categories', attributes: ["id"]
-                        }
-                    ]
-                });
-            }
+            whereMatch = [];
+            // se query match for digitado, será dividido
+            //whereMatch = [Op.or]: [{ name: queryMatch }, { description: queryMatch }];
         }
 
+        //console.log("whereMatch", whereMatch.condition);
+        
+        // query limit  whereMatch
+        // [Op.between]: queryPriceRange}
+        // [Op.or]: [{ name: queryMatch }, { description: queryMatch }]
+    
+        data = await ProductModel.findAll({
+            offset: newOffset,
+            limit: queryLimit,
+            where:  {whereMatch},
+            attributes: queryFields,
+            include: [
+                {
+                    model: ProdCategModel, as: 'category_id', attributes: ["category_id"]
+                },
+                {model: ImagesModel, as: 'images', attributes: ["id", ["path", 'content']]},
+                {model: OptionModel, as: 'options'}
+            ]
+        });
+
         // PEGA DA TABELA PRODCATEG, APENAS CATEGORY_ID
-        const categoryIdTabelaInterm = await  ProdCategModel.findAll();
-        console.log("categoryIdTabelaInterm: ", categoryIdTabelaInterm[0].dataValues);
+        //const categoryIdTabelaInterm = await  ProdCategModel.findAll();
+        //console.log("categoryIdTabelaInterm: ", categoryIdTabelaInterm[0].dataValues);
 
         //console.log("DATA: ", data);
-        //console.log("DATA.NAME: ", data[0].dataValues.name);
-        //console.log("DATA TYPE OF: ", typeof data);
 
         //  mostrar total de linhas do BD
         const datatotal = await ProductModel.count();
+
+        // altera o valor 1000 do queryLimit
+        if (queryLimit == 1000) {
+            queryLimit = -1;
+        }
 
         //console.log("antes do return: ", data);
         const obj = {"data": data, "Total": datatotal, "Limit": queryLimit, "Page": queryPage}
