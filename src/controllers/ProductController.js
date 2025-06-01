@@ -9,35 +9,137 @@ const ProdCategModel = require("../models/ProdCategModel");
 const ImagesModel = require("../models/ImagesModel");
 const OptionModel = require("../models/OptionModel");
 
+// para usar o Op (usado em condições)
+const { Op } = require('sequelize');
+
 // cria uma classe
 class ProductController {
     constructor() {
-        ProductModel.associate({CategoryModel, ProdCategModel,ImagesModel, OptionModel});
+        ProductModel.associate({CategoryModel, ProdCategModel, ImagesModel, OptionModel});
     }
 
     // método get
     async toListAll(request, response) {
         const query = request.query;
+        console.log("QUERY: ", query);
         
-        let fulldata = "";
+        // se URL não tem limit, vai ser um NaN, e retorna undefined
+        // Number(): converte o query string em número
+        let queryLimit = isNaN(Number(query.limit)) ? undefined : Number(query.limit);
+        let queryPage = isNaN(Number(query.page)) ? 1 : Number(query.page); // página com 12 itens
+        let queryFields = query.fields; // query fields
+        //let queryUseMenu = query.use_in_menu // query use_in_menu
+        let queryMatch = query.match // query match
+        //const queryCategoryId = query.category_id.split(','); // por ser lista precisa dividir
+        //const queryPriceRange = query.price_range.split('-');
+        let data = []; // lista de obj. que vem do BD
+        let standardLimit = 5; // padrão 12
         
-        let dados = query;
-        console.log(dados);
+        console.log("queryMatch: ", queryMatch);
 
-        let limite = query.limit;
-        console.log(limite);
+        // verifica se tem query fields
+        if (queryFields === undefined) {
+            // se query fields não for digitado
+            queryFields = { exclude: ["use_in_menu", "createdAt", "updatedAt"] };
+        } else {
+            // se query fields for digitado, será dividido
+            queryFields = queryFields.split(',');
+        }
 
-        //if (limite === "-1") {
-            //limite = 0;
-            /* console.log("certo");
-            fulldata += `{ limit: ${limite} }`;
-            console.log(fulldata); */
-        //}
-        
-        
-        const data = await ProductModel.findAll({ limit: 2 });
+        // query limit
+        if(queryLimit === undefined) {
+            if (queryUseMenu == "true") {
+                queryLimit = standardLimit
+                data = await ProductModel.findAll({ limit: queryLimit,
+                    where: {
+                        name: queryMatch,
+                        include: {
+                            through: ProdCategModel,
+                            model: CategoryModel,
+                            category_id: queryCategoryId
+                        },
+                        [Op.between]: queryPriceRange},
+                    attributes: queryFields });
 
-        return response.status(200).send(data);
+            } else {
+                queryLimit = standardLimit
+                data = await ProductModel.findAll({ limit: queryLimit, attributes: queryFields });
+            }
+
+        } else if(queryLimit == -1) {
+            //data = await CategoryModel.findAll();
+            if (queryMatch !== undefined) {
+                data = await ProductModel.findAll({
+                    where:  {
+                        [Op.or]: [{ name: queryMatch }, { description: queryMatch }]
+                    },
+                    attributes: queryFields,
+                    include: [
+                        {
+                            model: ProdCategModel, as: 'category_id', attributes: ["category_id"]
+                        },
+                        {model: ImagesModel, as: 'images', attributes: ["id", ["path", 'content']]},
+                        {model: OptionModel, as: 'options'}
+                    ]
+                });
+
+            } else {
+                // AQUI >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                data = await ProductModel.findAll({
+                    attributes: queryFields,
+                    include: [
+                        {
+                            model: ProdCategModel, as: 'category_id', attributes: ["category_id"]
+                        }
+                    ]
+                });
+            }
+
+        } else {
+            if (queryUseMenu == "true") {
+                // limit = 3 / page = 1 => offset: (3 * 1) - 3 = 0
+                let newOffset = ((queryLimit * queryPage) - queryLimit);
+                data = await ProductModel.findAll({ offset: newOffset, limit: queryLimit,
+                    where: { use_in_menu: 1 }, attributes: queryFields,
+                    include: [
+                        {
+                            //model: ProdCategModel , attributes: ["category_id"],
+                            //through: ProdCategModel , attributes: ["category_id"],
+                            model: CategoryModel, as: 'categories', attributes: ["id"]
+                        }
+                    ]
+                });
+
+            } else {
+                let newOffset = ((queryLimit * queryPage) - queryLimit);
+                data = await ProductModel.findAll({ offset: newOffset, limit: queryLimit,
+                    attributes: queryFields,
+                    include: [
+                        {
+                            model: ProdCategModel, attributes: ["category_id"]
+                            //through: ProdCategModel , attributes: ["category_id"],
+                            //model: CategoryModel, as: 'categories', attributes: ["id"]
+                        }
+                    ]
+                });
+            }
+        }
+
+        // PEGA DA TABELA PRODCATEG, APENAS CATEGORY_ID
+        const categoryIdTabelaInterm = await  ProdCategModel.findAll();
+        console.log("categoryIdTabelaInterm: ", categoryIdTabelaInterm[0].dataValues);
+
+        //console.log("DATA: ", data);
+        //console.log("DATA.NAME: ", data[0].dataValues.name);
+        //console.log("DATA TYPE OF: ", typeof data);
+
+        //  mostrar total de linhas do BD
+        const datatotal = await ProductModel.count();
+
+        //console.log("antes do return: ", data);
+        const obj = {"data": data, "Total": datatotal, "Limit": queryLimit, "Page": queryPage}
+
+        return response.status(200).send(obj);
     }
 
     // método get
@@ -48,8 +150,9 @@ class ProductController {
                 attributes: ["id", "enabled", "name", "slug", "stock", "description", "price", "price_with_discount"],
                 // inclui dados da outra tabela
                 include: [
-                    {through: ProdCategModel , attributes: ["category_id"],
-                        model: CategoryModel, as: 'categories', attributes: ["id"]}
+                    {model: ProdCategModel, as: 'category_id', attributes: ["category_id"]},
+                    {model: ImagesModel, as: 'images', attributes: ["id", ["path", 'content']]},
+                    {model: OptionModel, as: 'options'}
 /*
                         {
                             through: ProdCategModel,

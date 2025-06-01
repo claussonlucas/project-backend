@@ -13,6 +13,7 @@ class CategoryController {
     // método get
     async toListAll(request, response) {
         const query = request.query;
+
         // se URL não tem limit, vai ser um NaN, e retorna undefined
         // Number(): converte o query string em número
         let queryLimit = isNaN(Number(query.limit)) ? undefined : Number(query.limit);
@@ -83,7 +84,7 @@ class CategoryController {
         //console.log("antes do return: ", data);
         const obj = {"data": data, "Total": datatotal, "Limit": queryLimit, "Page": queryPage}
 
-        return response.status(200).send(obj);
+        return response.status(200).send(obj); 
     }
 
     // método get

@@ -12,6 +12,9 @@ const connection = require('../config/connection');
 class ProductModel extends Model {
     // associa a tabela products com a images
     static associate({CategoryModel, ProdCategModel, ImagesModel, OptionModel}) {
+        ProductModel.hasMany(ProdCategModel, {
+            foreignKey: 'product_id', as: 'category_id'
+        });
         ProductModel.belongsToMany(CategoryModel, {
             through: ProdCategModel,
             foreignKey: 'product_id',
