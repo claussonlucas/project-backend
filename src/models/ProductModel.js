@@ -13,7 +13,7 @@ class ProductModel extends Model {
     // associa a tabela products com a images
     static associate({CategoryModel, ProdCategModel, ImagesModel, OptionModel}) {
         ProductModel.hasMany(ProdCategModel, {
-            foreignKey: 'product_id', as: 'category_id'
+            foreignKey: 'product_id', as: 'category_ids'
         });
         ProductModel.belongsToMany(CategoryModel, {
             through: ProdCategModel,

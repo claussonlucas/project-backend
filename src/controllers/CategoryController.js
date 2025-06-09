@@ -84,7 +84,7 @@ class CategoryController {
         //console.log("antes do return: ", data);
         const obj = {"data": data, "Total": datatotal, "Limit": queryLimit, "Page": queryPage}
 
-        return response.status(200).send(obj); 
+        return response.status(200).send(obj);
     }
 
     // método get
