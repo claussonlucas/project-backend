@@ -10,6 +10,7 @@ A criação faz parte do projeto final Backend do curso de **Desenvolvedor Web F
 O projeto segue os requisitos do projeto `projeto-backend`, da escola `Digital College`, disponibilizado no repositório do site do `GitHub`:
 
 - Link do repositório no GitHub:
+
 ```https://github.com/digitalcollegebr/projeto-backend```
 
 ## Tecnologias Utilizadas
@@ -43,6 +44,8 @@ O projeto segue a arquitetura **MVC** (Model-View-Controller).
 
 ## Estrutura Lógica do Servidor
 A imagem foi criada no site **Whimsical**.
+
+![Estrutura Lógica](./doc/server-api.png)
 
 > Nota: como a lógica para as rotas de Categorias e Produtos são semelhantes a rota de Usuários, a imagem mostra apenas a rota, `controller`, `model` e tabela no banco de dados para Usuários.
 
@@ -92,6 +95,8 @@ Segue a estrutura de pastas do projeto.
 
 Existem seis tabelas no banco de dados: `usuários`, `categorias`, `produtos`, `imagens do produto`, `opções do produto` e `produtos e categoria`. A imagem representa a estrutura de relacionamento delas:
 
+![Tabela ER](./doc/tabelas-er.png)
+
 <details>
   <summary><strong>Informações</strong></summary>
 
@@ -102,27 +107,60 @@ Existem seis tabelas no banco de dados: `usuários`, `categorias`, `produtos`, `
 
 - Tabela de Usuários
  
-![homepage](./doc/homepage-p1.png)
+![Tabela Users](./doc/tab-user.png)
 
 - Tabela de Categorias
 
-![homepage](./doc/homepage-p2.png)
+![Tabela Category](./doc/tab-category.png)
 
 - Tabela de Produtos
 
-![homepage](./doc/homepage-p3.png)
+![Tabela Products](./doc/tab-products.png)
 
 - Tabela de Imagens do Produto
 
-![homepage](./doc/homepage-p4.png)
+![Tabela Images](./doc/tab-images.png)
 
 - Tabela de Opções do Produto
 
-![homepage](./doc/homepage-p5.png)
+![Tabela Options](./doc/tab-options-prod.png)
 
 - Tabela de Produtos e Categoria
   
-![produtos](./doc/produtos-p1.png)
+![Tabela Prod-Categ](./doc/tab-prod-categ.png)
+
+</details>
+
+</details>
+
+## Rotas
+
+<details>
+  <summary><strong>Mais</strong></summary>
+
+
+- Rotas Públicas
+<details>
+  <summary><strong>Mais</strong></summary>
+
+- Endereço Home:
+
+```
+GET  http://localhost:3000
+```
+
+- Endereço para criar usuário (retorno é um ‘token’):
+
+```
+POST  http://localhost:3000/v1/user
+```
+
+- Endereço para entrar na conta (login):
+
+```
+POST  http://localhost:3000/v1/user/token
+```
+</details>
 
 </details>
 
@@ -135,10 +173,13 @@ Existem seis tabelas no banco de dados: `usuários`, `categorias`, `produtos`, `
 ## Contribuição
 
 Alguns trechos de códigos foram feitos em parceria com o aluno Clailson Lucas, do curso Desenvolvedor Web Full Stack - Online - 2.0 - 2025, da Geração Tech.
+
 - GitHub: [@clailson1](https://github.com/clailson1)
 
 ## Licença
 
 O projeto segue o modelo do projeto `projeto-backend`, da escola `Digital College`, disponibilizado no repositório do site do `GitHub`:
 
-- Link do repositório no GitHub: ```[https://github.com/digitalcollegebr/projeto-backend](https://github.com/digitalcollegebr/projeto-backend)```
+- Link do repositório no GitHub:
+
+ ```[https://github.com/digitalcollegebr/projeto-backend](https://github.com/digitalcollegebr/projeto-backend)```
