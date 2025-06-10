@@ -271,7 +271,7 @@ DELETE  http://localhost:3000/v1/product/:id
 
 </details>
 
-### Instalação
+## Instalação
 <details>
   <summary><strong>Informações</strong></summary>
 
