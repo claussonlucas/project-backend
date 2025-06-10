@@ -271,8 +271,6 @@ DELETE  http://localhost:3000/v1/product/:id
 
 </details>
 
-</details>
-
 ### Instalação
 <details>
   <summary><strong>Informações</strong></summary>
@@ -295,10 +293,10 @@ npm install --save-dev nodemon
 
 - Editar arquivo `package.json`:
 
-- Em **main** trocar para server.js;
-- Em **scripts**, adicionar: "start": "nodemon server.js"
-- Alterar: "author": "Nome",
-- Alterar: "description": "texto da descrição"
+  - Em **main** trocar para server.js;
+  - Em **scripts**, adicionar: "start": "nodemon server.js"
+  - Alterar: "author": "Nome",
+  - Alterar: "description": "texto da descrição"
 
 - Instalação da biblioteca Express:
 
@@ -335,6 +333,8 @@ npm install crypto-js
 ```
 npm start
 ```
+
+</details>
 
 </details>
 
