@@ -21,120 +21,124 @@ class ProductController {
     // método get
     async toListAll(request, response) {
         const query = request.query;
-        console.log("QUERY: ", query);
         
         // se URL não tem limit, vai ser um NaN, e retorna undefined
         // Number(): converte o query string em número
         let queryLimit = isNaN(Number(query.limit)) ? undefined : Number(query.limit);
         let queryPage = isNaN(Number(query.page)) ? 1 : Number(query.page); // página com 12 itens
         let queryFields = query.fields; // query fields
-        //let queryUseMenu = query.use_in_menu // query use_in_menu
+        let colProduct = [];
+        let colTab = [];
+        let includeTab = {};
         let queryMatch = query.match // query match
-        //const queryCategoryId = query.category_id.split(','); // por ser lista precisa dividir
-        //const queryPriceRange = query.price_range.split('-');
+        let queryCategoryIds = query.category_ids; // por ser lista precisa dividir
+        let queryPriceRange = query.price_range;
         let data = []; // lista de obj. que vem do BD
         let standardLimit = 5; // padrão 12
+        let newOffset = 0; // usado no offset
+        let whereMatch = []; // usado no where (para queryMatch)
         
-        console.log("queryMatch: ", queryMatch);
+        // se query fields não for digitado
+        whereMatch = {where:  {}};
+
+        // verifica se tem queryLimit
+        if (queryLimit === undefined) {
+            // se query fields não for digitado
+            queryLimit = standardLimit;
+        } else if (queryLimit == -1) {
+            // número alto para mostrar todos
+            queryLimit = 1000;
+        } else {
+            // limit = 3 / page = 1 => offset: (3 * 1) - 3 = 0
+            newOffset = ((queryLimit * queryPage) - queryLimit);
+        }
 
         // verifica se tem query fields
         if (queryFields === undefined) {
             // se query fields não for digitado
-            queryFields = { exclude: ["use_in_menu", "createdAt", "updatedAt"] };
+            colProduct = { exclude: ["use_in_menu", "createdAt", "updatedAt"] };
+
+            includeTab = {x: []};
         } else {
             // se query fields for digitado, será dividido
             queryFields = queryFields.split(',');
+            // colunas da tabela produtos
+            colProduct = queryFields.filter(check);
+
+            function check(field) {
+                return (field !== 'images' &&  field !== 'options');
+            }
+
+            // colunas de outras tabelas
+            colTab = queryFields.filter(checkTab);
+
+            function checkTab(field) {
+                return (field === 'images' || field === 'options');
+            }
+
+            if (colTab.length == 0) {
+                
+                includeTab = {x: []}; // cria uma chave com uma array vazia
+            } else {
+                includeTab = {x: []};
+                
+                if (colTab.includes('images')) {
+                    includeTab.x.push({model: ImagesModel, as: 'images', attributes: ["id", ["path", 'content']]},);
+                }
+
+                if (colTab.includes('options')) {
+                    includeTab.x.push({model: OptionModel, as: 'options'},);
+                }
+            }
+            
         }
 
-        // query limit
-        if(queryLimit === undefined) {
-            if (queryUseMenu == "true") {
-                queryLimit = standardLimit
-                data = await ProductModel.findAll({ limit: queryLimit,
-                    where: {
-                        name: queryMatch,
-                        include: {
-                            through: ProdCategModel,
-                            model: CategoryModel,
-                            category_id: queryCategoryId
-                        },
-                        [Op.between]: queryPriceRange},
-                    attributes: queryFields });
-
-            } else {
-                queryLimit = standardLimit
-                data = await ProductModel.findAll({ limit: queryLimit, attributes: queryFields });
-            }
-
-        } else if(queryLimit == -1) {
-            //data = await CategoryModel.findAll();
-            if (queryMatch !== undefined) {
-                data = await ProductModel.findAll({
-                    where:  {
-                        [Op.or]: [{ name: queryMatch }, { description: queryMatch }]
-                    },
-                    attributes: queryFields,
-                    include: [
-                        {
-                            model: ProdCategModel, as: 'category_id', attributes: ["category_id"]
-                        },
-                        {model: ImagesModel, as: 'images', attributes: ["id", ["path", 'content']]},
-                        {model: OptionModel, as: 'options'}
-                    ]
-                });
-
-            } else {
-                // AQUI >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-                data = await ProductModel.findAll({
-                    attributes: queryFields,
-                    include: [
-                        {
-                            model: ProdCategModel, as: 'category_id', attributes: ["category_id"]
-                        }
-                    ]
-                });
-            }
-
-        } else {
-            if (queryUseMenu == "true") {
-                // limit = 3 / page = 1 => offset: (3 * 1) - 3 = 0
-                let newOffset = ((queryLimit * queryPage) - queryLimit);
-                data = await ProductModel.findAll({ offset: newOffset, limit: queryLimit,
-                    where: { use_in_menu: 1 }, attributes: queryFields,
-                    include: [
-                        {
-                            //model: ProdCategModel , attributes: ["category_id"],
-                            //through: ProdCategModel , attributes: ["category_id"],
-                            model: CategoryModel, as: 'categories', attributes: ["id"]
-                        }
-                    ]
-                });
-
-            } else {
-                let newOffset = ((queryLimit * queryPage) - queryLimit);
-                data = await ProductModel.findAll({ offset: newOffset, limit: queryLimit,
-                    attributes: queryFields,
-                    include: [
-                        {
-                            model: ProdCategModel, attributes: ["category_id"]
-                            //through: ProdCategModel , attributes: ["category_id"],
-                            //model: CategoryModel, as: 'categories', attributes: ["id"]
-                        }
-                    ]
-                });
-            }
+        // verifica se tem query match
+        if (queryMatch !== undefined) {
+            whereMatch.where = {[Op.or] :[{ name: queryMatch },
+                { description: queryMatch }],};
         }
+
+        // verifica se tem query category_ids
+        if (queryCategoryIds !== undefined) {
+            queryCategoryIds = queryCategoryIds.split(',');
+            
+            includeTab.x.unshift({model: ProdCategModel, as: 'category_ids',
+                where: {category_id: queryCategoryIds},
+                attributes: ["category_id"]}
+            );
+        }
+
+        // verifica se tem query queryPriceRange
+        if (queryPriceRange !== undefined) {
+            queryPriceRange = queryPriceRange.split('-');
+            whereMatch.where.price = {[Op.between]: [queryPriceRange[0], queryPriceRange[1]]}
+        }
+
+        //console.log("whereMatch.where", whereMatch.where);
+
+        data = await ProductModel.findAll({
+            offset: newOffset,
+            limit: queryLimit,
+            where:  whereMatch.where,
+            attributes: colProduct,
+            include: includeTab.x
+            
+        });
 
         // PEGA DA TABELA PRODCATEG, APENAS CATEGORY_ID
-        const categoryIdTabelaInterm = await  ProdCategModel.findAll();
-        console.log("categoryIdTabelaInterm: ", categoryIdTabelaInterm[0].dataValues);
+        //const categoryIdTabelaInterm = await  ProdCategModel.findAll();
+        //console.log("categoryIdTabelaInterm: ", categoryIdTabelaInterm[0].dataValues);
 
         //console.log("DATA: ", data);
-        //console.log("DATA.NAME: ", data[0].dataValues.name);
-        //console.log("DATA TYPE OF: ", typeof data);
 
         //  mostrar total de linhas do BD
         const datatotal = await ProductModel.count();
+
+        // altera o valor 1000 do queryLimit
+        if (queryLimit == 1000) {
+            queryLimit = -1;
+        }
 
         //console.log("antes do return: ", data);
         const obj = {"data": data, "Total": datatotal, "Limit": queryLimit, "Page": queryPage}
