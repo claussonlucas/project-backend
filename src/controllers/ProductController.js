@@ -21,7 +21,6 @@ class ProductController {
     // método get
     async toListAll(request, response) {
         const query = request.query;
-        //console.log("QUERY: ", query);
         
         // se URL não tem limit, vai ser um NaN, e retorna undefined
         // Number(): converte o query string em número
@@ -31,19 +30,16 @@ class ProductController {
         let colProduct = [];
         let colTab = [];
         let includeTab = {};
-        //let queryMatch = query.match // query match
-        //const queryCategoryIds = query.category_ids.split(','); // por ser lista precisa dividir
-        //const queryPriceRange = query.price_range.split('-');
+        let queryMatch = query.match // query match
+        let queryCategoryIds = query.category_ids; // por ser lista precisa dividir
+        let queryPriceRange = query.price_range;
         let data = []; // lista de obj. que vem do BD
         let standardLimit = 5; // padrão 12
         let newOffset = 0; // usado no offset
-        //let whereMatch = []; // usado no where (para queryMatch)
+        let whereMatch = []; // usado no where (para queryMatch)
         
-        //console.log("queryCategoryIds: ", queryCategoryIds);
-        //console.log("queryPriceRange: ", queryPriceRange);
-
-        //console.log("queryPriceRange[0]: ", queryPriceRange[0]);
-        //console.log("queryPriceRange[1]: ", queryPriceRange[1]);
+        // se query fields não for digitado
+        whereMatch = {where:  {}};
 
         // verifica se tem queryLimit
         if (queryLimit === undefined) {
@@ -98,76 +94,37 @@ class ProductController {
         }
 
         // verifica se tem query match
- //       if (queryMatch === undefined) {
-            // se query fields não for digitado
-            //whereMatch = "";
-/*             whereMatch = {where:  {}};
-        } else { */
-            //whereMatch = queryMatch;
-/*             whereMatch = {where: {
-                    [Op.or]: [{ name: queryMatch }, { description: queryMatch }],
-                }
-            };
-        } */
-        
+        if (queryMatch !== undefined) {
+            whereMatch.where = {[Op.or] :[{ name: queryMatch },
+                { description: queryMatch }],};
+        }
+
         // verifica se tem query category_ids
-/*         if (queryCategoryIds === undefined) {
-            whereMatch = {where:  {}};
-        } else {
-            whereMatch = {where: {
-                    '$category_ids.category_id$': { [Op.eq]: 1 },
-                }
-            };
-        } */
-// price
-/*
-                    price: {[Op.between]: [queryPriceRange[0], queryPriceRange[1]]},
-*/
-        //console.log("colTab.length",colTab.length);
-        
-        //console.log("colTab:", colTab);
+        if (queryCategoryIds !== undefined) {
+            queryCategoryIds = queryCategoryIds.split(',');
+            
+            includeTab.x.unshift({model: ProdCategModel, as: 'category_ids',
+                where: {category_id: queryCategoryIds},
+                attributes: ["category_id"]}
+            );
+        }
 
-        //console.log("includeTab.x",includeTab.x);
+        // verifica se tem query queryPriceRange
+        if (queryPriceRange !== undefined) {
+            queryPriceRange = queryPriceRange.split('-');
+            whereMatch.where.price = {[Op.between]: [queryPriceRange[0], queryPriceRange[1]]}
+        }
 
-        //console.log("teste",teste[0].dataValues.category_ids[0].dataValues.category_id);
-        
-        /* includeTab.x.push({model: ProdCategModel, as: 'category_ids', where: {category_id: queryCategoryIds},
-                            attributes: ["category_id"]},); */
+        //console.log("whereMatch.where", whereMatch.where);
 
-
-        /* includeTab.x.push({model: ProdCategModel, as: 'category_ids',required: true,
-                    attributes: ["category_id"]},); */
-
-        /* includeTab.x.push({model: CategoryModel, as: 'categories', through: {where: {category_id: queryCategoryIds},
-                            attributes: ["category_id"]},}); */
-
-        //whereMatch.where
-        //includeTab.x
-    
         data = await ProductModel.findAll({
             offset: newOffset,
             limit: queryLimit,
-            where:  {'$category_ids.category_id$': 1 },
+            where:  whereMatch.where,
             attributes: colProduct,
-            include: [
-                {
-                    model: ProdCategModel,
-                    as: 'category_ids',
-                    attributes: [],
-                    required: true // importante para o filtro funcionar corretamente
-                },
-                ...includeTab.x // isso garante que continue incluindo images/options se solicitados
-            ]
+            include: includeTab.x
+            
         });
-
-        // ESTAVA EM INCLUDE
-        /*
-        {
-                    model: ProdCategModel, as: 'category_id', attributes: ["category_id"]
-                },
-                {model: ImagesModel, as: 'images', attributes: ["id", ["path", 'content']]},
-                {model: OptionModel, as: 'options'}
-        */
 
         // PEGA DA TABELA PRODCATEG, APENAS CATEGORY_ID
         //const categoryIdTabelaInterm = await  ProdCategModel.findAll();

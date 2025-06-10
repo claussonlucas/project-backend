@@ -29,6 +29,8 @@ O projeto segue os requisitos do projeto `projeto-backend`, da escola `Digital C
 
 - JWT
 
+- Crypto.js
+
 ## Sobre o Servidor
 
 O servidor apresenta a rota da página principal (Home), a página para verificar a conta (Login), e páginas para o CRUD de **Usuários**, **Categorias de produtos**, e **Produtos**.
@@ -43,7 +45,7 @@ O projeto segue a arquitetura **MVC** (Model-View-Controller).
   <summary><strong>Informações</strong></summary>
 
 ## Estrutura Lógica do Servidor
-A imagem foi criada no site **Whimsical**.
+A imagem foi criada no site [Whimsical](https://whimsical.com/).
 
 ![Estrutura Lógica](./doc/server-api.png)
 
@@ -93,12 +95,16 @@ Segue a estrutura de pastas do projeto.
 
 ## Tabelas no Banco de Dados
 
-Existem seis tabelas no banco de dados: `usuários`, `categorias`, `produtos`, `imagens do produto`, `opções do produto` e `produtos e categoria`. A imagem representa a estrutura de relacionamento delas:
-
-![Tabela ER](./doc/tabelas-er.png)
+Existem seis tabelas no banco de dados: `usuários`, `categorias`, `produtos`, `imagens do produto`, `opções do produto` e `produtos e categoria`.
 
 <details>
   <summary><strong>Informações</strong></summary>
+
+A imagem representa a estrutura de relacionamento das tabelas:
+
+![Tabela ER](./doc/tabelas-er.png)
+
+> Imagem criada no site **Whimsical**.
 
 ### 1 - Tabelas
 
@@ -109,25 +115,37 @@ Existem seis tabelas no banco de dados: `usuários`, `categorias`, `produtos`, `
  
 ![Tabela Users](./doc/tab-user.png)
 
+> Imagem criada no site **Whimsical**.
+
 - Tabela de Categorias
 
 ![Tabela Category](./doc/tab-category.png)
+
+> Imagem criada no site **Whimsical**.
 
 - Tabela de Produtos
 
 ![Tabela Products](./doc/tab-products.png)
 
+> Imagem criada no site **Whimsical**.
+
 - Tabela de Imagens do Produto
 
 ![Tabela Images](./doc/tab-images.png)
+
+> Imagem criada no site **Whimsical**.
 
 - Tabela de Opções do Produto
 
 ![Tabela Options](./doc/tab-options-prod.png)
 
+> Imagem criada no site **Whimsical**.
+
 - Tabela de Produtos e Categoria
   
 ![Tabela Prod-Categ](./doc/tab-prod-categ.png)
+
+> Imagem criada no site **Whimsical**.
 
 </details>
 
@@ -139,7 +157,7 @@ Existem seis tabelas no banco de dados: `usuários`, `categorias`, `produtos`, `
   <summary><strong>Mais</strong></summary>
 
 
-- Rotas Públicas
+### Rotas Públicas
 <details>
   <summary><strong>Mais</strong></summary>
 
@@ -162,7 +180,161 @@ POST  http://localhost:3000/v1/user/token
 ```
 </details>
 
+### Rotas Privadas
+<details>
+  <summary><strong>Mais</strong></summary>
+
+**Usuários**
+
+- Buscar usuário por ID:
+
+```
+GET  http://localhost:3000/v1/user/:id
+```
+
+- Atualizar usuário por ID:
+
+```
+POST  http://localhost:3000/v1/user/:id
+```
+
+- Deletar usuário por ID:
+
+```
+DELETE  http://localhost:3000/v1/user/:id
+```
+
+**Categorias**
+
+- Buscar todas as categorias:
+
+```
+GET  http://localhost:3000/v1/category/search
+```
+
+- Buscar categoria por ID:
+
+```
+GET  http://localhost:3000/v1/category/:id
+```
+
+- Criar categoria:
+
+```
+POST  http://localhost:3000/v1/category
+```
+
+- Atualizar categoria por ID:
+
+```
+POST  http://localhost:3000/v1/category/:id
+```
+
+- Deletar categoria por ID:
+
+```
+DELETE  http://localhost:3000/v1/category/:id
+```
+
+**Produtos**
+
+- Buscar todos os produtos:
+
+```
+GET  http://localhost:3000/v1/product/search
+```
+
+- Buscar produto por ID:
+
+```
+GET  http://localhost:3000/v1/product/:id
+```
+
+- Criar produto:
+
+```
+POST  http://localhost:3000/v1/product
+```
+
+- Atualizar produto por ID:
+
+```
+POST  http://localhost:3000/v1/product/:id
+```
+
+- Deletar produto por ID:
+
+```
+DELETE  http://localhost:3000/v1/product/:id
+```
 </details>
+
+</details>
+
+</details>
+
+### Instalação
+<details>
+  <summary><strong>Informações</strong></summary>
+
+- Criar pasta para o projeto, e abrir o VScode nela.
+
+- Criar `package.json`:
+
+```
+npm init -y
+```
+
+- Instalação da biblioteca Nodemon:
+
+```
+npm install --save-dev nodemon
+```
+
+- Criar arquivo `server.js`
+
+- Editar arquivo `package.json`:
+
+- Em **main** trocar para server.js;
+- Em **scripts**, adicionar: "start": "nodemon server.js"
+- Alterar: "author": "Nome",
+- Alterar: "description": "texto da descrição"
+
+- Instalação da biblioteca Express:
+
+```
+npm install express
+```
+
+- Instalação da biblioteca JSON Web Token:
+
+```
+npm install jsonwebtoken
+```
+
+- Instalação da biblioteca Dotenv:
+
+```
+npm install dotenv
+```
+
+- Instalação das bibliotecas Sequelize e MySQL2:
+
+```
+npm install sequelize mysql2
+```
+
+- Instalação da biblioteca CRYPTO-JS:
+
+```
+npm install crypto-js
+```
+
+- Iniciar o servidor:
+
+```
+npm start
+```
 
 </details>
 

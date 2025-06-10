@@ -1,105 +1,308 @@
-const ImageModel = require("../models/ImageModel");
-const OptionModel = require("../models/OptionModel");
-const ProductModel = require("../models/ProductModel");
+// ProductController.js
+// data: 25/05/2025
 
+
+// importa arquivos models
+const ProductModel = require("../models/ProductModel");
+const CategoryModel = require("../models/CategoryModel");
+const ProdCategModel = require("../models/ProdCategModel");
+const ImagesModel = require("../models/ImagesModel");
+const OptionModel = require("../models/OptionModel");
+
+// para usar o Op (usado em condições)
+const { Op } = require('sequelize');
+
+// cria uma classe
 class ProductController {
     constructor() {
-        ProductModel.associate({ImageModel, OptionModel});
+        ProductModel.associate({CategoryModel, ProdCategModel, ImagesModel, OptionModel});
     }
 
-    async getAll(request, response) {
-        try {
-            const dados = await ProductModel.findAll({
-                attributes: {
-                    exclude: ['id', 'use_in_menu', 'createdAt', 'updatedAt']
-                }
-            });
-            return response.status(200).json(dados);
-        } catch (error) {
-            return response.status(500).send("Erro no servidor!");
+    // método get
+    async toListAll(request, response) {
+        const query = request.query;
+        
+        // se URL não tem limit, vai ser um NaN, e retorna undefined
+        // Number(): converte o query string em número
+        let queryLimit = isNaN(Number(query.limit)) ? undefined : Number(query.limit);
+        let queryPage = isNaN(Number(query.page)) ? 1 : Number(query.page); // página com 12 itens
+        let queryFields = query.fields; // query fields
+        let colProduct = [];
+        let colTab = [];
+        let includeTab = {};
+        let queryMatch = query.match // query match
+        let conditionMatch = "";
+        let queryCategoryIds = query.category_ids; // por ser lista precisa dividir
+        let queryPriceRange = query.price_range;
+        let data = []; // lista de obj. que vem do BD
+        let standardLimit = 5; // padrão 12
+        let newOffset = 0; // usado no offset
+        let whereMatch = []; // usado no where (para queryMatch)
+        
+        // se query fields não for digitado
+        whereMatch = {where:  {}};
+
+        // verifica se tem queryLimit
+        if (queryLimit === undefined) {
+            // se query fields não for digitado
+            queryLimit = standardLimit;
+        } else if (queryLimit == -1) {
+            // número alto para mostrar todos
+            queryLimit = 1000;
+        } else {
+            // limit = 3 / page = 1 => offset: (3 * 1) - 3 = 0
+            newOffset = ((queryLimit * queryPage) - queryLimit);
         }
+
+        // verifica se tem query fields
+        if (queryFields === undefined) {
+            // se query fields não for digitado
+            colProduct = { exclude: ["use_in_menu", "createdAt", "updatedAt"] };
+
+            includeTab = {x: []};
+        } else {
+            // se query fields for digitado, será dividido
+            queryFields = queryFields.split(',');
+            // colunas da tabela produtos
+            colProduct = queryFields.filter(check);
+
+            function check(field) {
+                return (field !== 'images' &&  field !== 'options');
+            }
+
+            // colunas de outras tabelas
+            colTab = queryFields.filter(checkTab);
+
+            function checkTab(field) {
+                return (field === 'images' || field === 'options');
+            }
+
+            if (colTab.length == 0) {
+                
+                includeTab = {x: []}; // cria uma chave com uma array vazia
+            } else {
+                includeTab = {x: []};
+                
+                if (colTab.includes('images')) {
+                    includeTab.x.push({model: ImagesModel, as: 'images', attributes: ["id", ["path", 'content']]},);
+                }
+
+                if (colTab.includes('options')) {
+                    includeTab.x.push({model: OptionModel, as: 'options'},);
+                }
+            }
+            
+        }
+
+        // verifica se tem query match
+        if (queryMatch !== undefined) {
+            conditionMatch = {[Op.or] :[{ name: queryMatch }, { description: queryMatch }]};
+            whereMatch.where = conditionMatch;
+/*             whereMatch = {where: {
+                    [Op.or]: [{ name: queryMatch }, { description: queryMatch }],
+                } 
+            };*/
+        }
+
+        // verifica se tem query category_ids
+        if (queryCategoryIds !== undefined) {
+            queryCategoryIds = queryCategoryIds.split(',');
+            
+            includeTab.x.unshift({model: ProdCategModel, as: 'category_ids',
+                where: {category_id: queryCategoryIds},
+                attributes: ["category_id"]}
+            );
+        }
+
+        // verifica se tem query queryPriceRange
+        if (queryPriceRange !== undefined) {
+            queryPriceRange = queryPriceRange.split('-');
+            console.log("queryPriceRange",queryPriceRange);
+            whereMatch.where = {price: {[Op.between]: [queryPriceRange[0], queryPriceRange[1]]}}
+        }
+
+        console.log("whereMatch.where", whereMatch.where);
+
+        data = await ProductModel.findAll({
+            offset: newOffset,
+            limit: queryLimit,
+            where:  whereMatch.where,
+            attributes: colProduct,
+            include: includeTab.x
+            
+        });
+
+        // PEGA DA TABELA PRODCATEG, APENAS CATEGORY_ID
+        //const categoryIdTabelaInterm = await  ProdCategModel.findAll();
+        //console.log("categoryIdTabelaInterm: ", categoryIdTabelaInterm[0].dataValues);
+
+        //console.log("DATA: ", data);
+
+        //  mostrar total de linhas do BD
+        const datatotal = await ProductModel.count();
+
+        // altera o valor 1000 do queryLimit
+        if (queryLimit == 1000) {
+            queryLimit = -1;
+        }
+
+        //console.log("antes do return: ", data);
+        const obj = {"data": data, "Total": datatotal, "Limit": queryLimit, "Page": queryPage}
+
+        return response.status(200).send(obj);
     }
 
-    async getById(request, response) {
+    // método get
+    async toListById(request, response) {
         const id = request.params.id;
         try {
-            const dados = await ProductModel.findByPk(id, {
-                attributes: {
-                    exclude: ['id', 'use_in_menu', 'createdAt', 'updatedAt']
-                }
-            })
-            if (dados !== null) {
-                return response.status(200).json(dados);
-            } else {
-                return response.status(404).send("Produto não encontrado!");
-            }
-        } catch (error) {
-            return response.status(500).send("Erro no servidor!");
-        }
-    }
-
-    async create(request, response) {
-        const body = request.body; 
-        // Validação para campos obrigatórios
-        if (!body.name || !body.slug || !body.price || !body.price_with_discount) {
-            return response.status(400).send("Os campos 'name', 'slug', 'price' e 'price_with_discount' são obrigatórios!");        
-        }
-        try {
-            await ProductModel.create(body, {
+                const data = await ProductModel.findByPk(id, {
+                attributes: ["id", "enabled", "name", "slug", "stock", "description", "price", "price_with_discount"],
+                // inclui dados da outra tabela
                 include: [
-                    {
-                        model: ImageModel,
-                        as: 'images'
+                    {model: ProdCategModel, as: 'category_id', attributes: ["category_id"]},
+                    {model: ImagesModel, as: 'images', attributes: ["id", ["path", 'content']]},
+                    {model: OptionModel, as: 'options'}
+/*
+                        {
+                            through: ProdCategModel,
+                        model: ProdCategModel, attributes: ['category_id']
                     },
-                    {
-                        model: OptionModel,
-                        as: 'options'
-                    }
+                    {model: ImagesModel, as: 'images', attributes: ["id", "path"]},
+                    {model: OptionModel, as: 'options', attributes: ["id", "product_id", "title", "shape", "radius", "type", "values"]} */
                 ]
             });
-            return response.status(201).send("Produto cadastrado com sucesso!");
+
+            // se no URL tiver id que não tem na tabela retorna 404
+            if (data === null) {
+                return response.status(404).send("Produto não existe");
+            }
+
+            return response.status(200).json(data);
+            
         } catch (error) {
-            console.error("Erro ao criar produto:", error);
-            return response.status(500).send("Erro no servidor!");
+            // catch: caso ocorra erro no try, envia status 500 (erro no servidor)
+            return response.status(500).send("500: ERRO NO SERVIDOR!");
         }
     }
 
-    async update(request, response) {
+    // método post
+    async toCreate(request, response) {
+        const {category_id, ...body} = request.body;
+        
+                    // verifica se falta item no corpo da requisição
+            if (body.name == undefined || body.slug == undefined ||
+                body.price == undefined || body.price_with_discount == undefined) {
+                return response.status(400).send("Erro 400: Erro na requisição. Falta dados.");
+            }
+
+            // envia para BD
+            //await ImagesModel.create();
+            let post = await ProductModel.create(body, {
+                include: [
+                    {
+                        through: ProdCategModel,
+                        model: CategoryModel, as: 'categories'
+                    },
+                    {model: ImagesModel, as: 'images'},
+                    {model: OptionModel, as: 'options'}
+                ]
+            });
+
+            post.setCategories(category_id);
+             // Se precisar associar categorias (many-to-many)
+        /* if (body.category_id && body.category_id.length) {
+            const product = await ProductModel.findOne({
+                where: { name: body.name },
+                attributes: ['id']
+            });
+            await product.setCategories(body.category_id); */
+        //}
+
+                        
+            return response.status(201).json({
+                    message: "Produto criado com sucesso"
+                });
+        // try: realiza os códigos
+        //try {
+            // FAZER 401
+
+            // verifica se falta item no corpo da requisição
+//            if (body.name == undefined || body.slug == undefined ||
+//                body.price == undefined || body.price_with_discount == undefined) {
+//                return response.status(400).send("Erro 400: Erro na requisição. Falta dados.");
+//            }
+
+            // envia para BD
+//            await ProductModel.create(body, {include: ImagesModel});
+            
+//            return response.status(201).json({
+//                    message: "Produto criado com sucesso"
+//                });
+//        } catch (error) {
+            // catch: caso ocorra erro no try, envia status 500 (erro no servidor)
+            //return response.status(500).send("500: ERRO NO SERVIDOR!");
+//        }
+    }
+
+    // método put
+    async toUpdate(request, response) {
         const id = request.params.id;
         const body = request.body;
-        // Validação para campos obrigatórios
-        if (!body.name || !body.slug || !body.price || !body.price_with_discount) {
-            return response.status(400).send("Os campos 'name', 'slug', 'price' e 'price_with_discount' são obrigatórios!");        
-        }
         try {
-            const product = await ProductModel.findOne({ where: { id } });
-            if (product) {
-               await ProductModel.update(body, { where: { id } }); 
-               return response.status(204).send("Produto atualizado com sucesso!");
-            } else {
-                return response.status(404).send("Produto não encontrado!");
+            // FAZER 401
+
+            // verifica se falta item no corpo da requisição
+            if (body.name == undefined || body.slug == undefined ||
+                body.price == undefined || body.price_with_discount == undefined) {
+                return response.status(400).send("Erro 400: Erro na requisição. Falta dados.");
             }
+
+            // procura na tabela se existe a linha de acordo com o id
+            const search = await ProductModel.findOne({ where: {id} });
+
+            // se a linha da tabela não existir
+            if (search === null) {
+                return response.status(404).send("404: Categoria não existe");
+            }
+
+            // atualiza a linha no BD
+            await ProductModel.update(body, { where: {id} });
+            return response.status(204).send("");
+            
         } catch (error) {
-            return response.status(500).send("Erro no servidor!");
+            // catch: caso ocorra erro no try, envia status 500 (erro no servidor)
+            return response.status(500).send("500: ERRO NO SERVIDOR!");
         }
     }
 
-    async delete(request, response) {
+    // método delete
+    async toDelete(request, response) {
         const id = request.params.id;
-        try {
-            // Primeiro verifica se o produto existe
-            const product = await ProductModel.findOne({ where: { id } });
-            if (product) {
-                // Se existir, deleta o produto
-                await ProductModel.destroy({ where: { id } });
-                return response.status(204).send("Produto deletado com sucesso!");
-            } else {
-                return response.status(404).send("Produto não encontrado!");
-            }
-        } catch (error) {
-            return response.status(500).send("Erro no servidor!");
+        const search = await ProductModel.findOne({ where: {id} });
+
+        if (search === null) {
+            return response.status(404).send("404: Categoria não existe");
         }
+
+        await ProductModel.destroy({ where: {id}});
+        return response.status(204).send("");
+        //try {
+            // FAZER 401
+
+/*             const search = await ProductModel.findOne({ where: {id} });
+
+            if (search === null) {
+                return response.status(404).send("404: Categoria não existe");
+            }
+
+            await ProductModel.destroy({ where: {id}});
+            return response.status(204).send("");
+        } catch (error) {
+            return response.status(500).send("500: ERRO NO SERVIDOR!");
+        } */
     }
 }
 
+// exporta arquivo
 module.exports = ProductController;
