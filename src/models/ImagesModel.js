@@ -30,7 +30,8 @@ ImagesModel.init(
                 model: ProductModel,
                 key: 'id'
             },
-            onDelete: 'CASCADE'
+            onUpdate: 'CASCADE',
+            //onDelete: 'CASCADE',
         },
         // coluna enabled
         enabled: {

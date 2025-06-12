@@ -13,7 +13,8 @@ OptionModel.init (
                 model: ProductModel,
                 key: 'id'
             },
-            onDelete: 'CASCADE'
+            onUpdate: 'CASCADE',
+            //onDelete: 'CASCADE',
         },
         title: {
             type: DataTypes.STRING(45),

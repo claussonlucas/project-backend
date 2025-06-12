@@ -31,14 +31,18 @@ class ProductController {
         let colTab = [];
         let includeTab = {};
         let queryMatch = query.match // query match
-        let conditionMatch = "";
         let queryCategoryIds = query.category_ids; // por ser lista precisa dividir
         let queryPriceRange = query.price_range;
+        let queryOption = query.option;
         let data = []; // lista de obj. que vem do BD
         let standardLimit = 5; // padrão 12
         let newOffset = 0; // usado no offset
         let whereMatch = []; // usado no where (para queryMatch)
         
+        console.log("query:", query);
+        console.log("queryOption", queryOption);
+        
+
         // se query fields não for digitado
         whereMatch = {where:  {}};
 
@@ -87,21 +91,17 @@ class ProductController {
                     includeTab.x.push({model: ImagesModel, as: 'images', attributes: ["id", ["path", 'content']]},);
                 }
 
-                if (colTab.includes('options')) {
+/*                 if (colTab.includes('options')) {
                     includeTab.x.push({model: OptionModel, as: 'options'},);
-                }
+                } */
             }
             
         }
 
         // verifica se tem query match
         if (queryMatch !== undefined) {
-            conditionMatch = {[Op.or] :[{ name: queryMatch }, { description: queryMatch }]};
-            whereMatch.where = conditionMatch;
-/*             whereMatch = {where: {
-                    [Op.or]: [{ name: queryMatch }, { description: queryMatch }],
-                } 
-            };*/
+            whereMatch.where = {[Op.or] :[{ name: queryMatch },
+                { description: queryMatch }],};
         }
 
         // verifica se tem query category_ids
@@ -117,11 +117,19 @@ class ProductController {
         // verifica se tem query queryPriceRange
         if (queryPriceRange !== undefined) {
             queryPriceRange = queryPriceRange.split('-');
-            console.log("queryPriceRange",queryPriceRange);
-            whereMatch.where = {price: {[Op.between]: [queryPriceRange[0], queryPriceRange[1]]}}
+            whereMatch.where.price = {[Op.between]: [queryPriceRange[0], queryPriceRange[1]]}
         }
 
-        console.log("whereMatch.where", whereMatch.where);
+        // verifica se tem query queryOption
+        if (queryOption !== undefined) {
+            queryOption = queryOption.split(',');
+            console.log("queryOption", queryOption);
+            
+            includeTab.x.push({model: OptionModel, as: 'options'},);
+
+        }
+
+        //console.log("whereMatch.where", whereMatch.where);
 
         data = await ProductModel.findAll({
             offset: newOffset,
@@ -249,6 +257,7 @@ class ProductController {
     async toUpdate(request, response) {
         const id = request.params.id;
         const body = request.body;
+        const { category_id, images, options,} = request.body;
         try {
             // FAZER 401
 
@@ -261,18 +270,40 @@ class ProductController {
             // procura na tabela se existe a linha de acordo com o id
             const search = await ProductModel.findOne({ where: {id} });
 
+            /* , {
+                include: [
+                    { model: ImagesModel, as: 'images' },
+                    { model: OptionModel, as: 'options' },
+                    { model: CategoryModel, as: 'categories' }
+                ]
+            } */
             // se a linha da tabela não existir
             if (search === null) {
-                return response.status(404).send("404: Categoria não existe");
+                return response.status(404).send("404: Produto não existe");
             }
 
             // atualiza a linha no BD
-            await ProductModel.update(body, { where: {id} });
+            await search.update(body, { where: {id} });
+
+            // Altera imagens
+            await ImagesModel.destroy({ where: { product_id: id } });
+            const newImages = images.map(img => ({ ...img, product_id: id }));
+            await ImagesModel.bulkCreate(newImages);
+
+            // Altera categorias
+            await search.setCategories(category_id);
+
+            // Altera options
+            await OptionModel.destroy({ where: { product_id: id } });
+            const newOptions = options.map(opt => ({ ...opt, product_id: id }));
+            await OptionModel.bulkCreate(newOptions);
+
+            //await ProductModel.save();
             return response.status(204).send("");
             
         } catch (error) {
             // catch: caso ocorra erro no try, envia status 500 (erro no servidor)
-            return response.status(500).send("500: ERRO NO SERVIDOR!");
+            return response.status(500).send(`500: ERRO NO SERVIDOR! Erro: ${error}`);
         }
     }
 

@@ -22,7 +22,9 @@ class ProductModel extends Model {
             as: 'categories'
         });
         ProductModel.hasMany(ImagesModel, {
-            foreignKey: 'product_id', as: 'images'
+            foreignKey: 'product_id', as: 'images',
+            onUpdate: 'CASCADE',
+            onDelete: 'CASCADE',
         });
         ProductModel.hasMany(OptionModel, {
             foreignKey: 'product_id', as: 'options'
