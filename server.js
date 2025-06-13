@@ -6,7 +6,6 @@
 // biblioteca express
 const express = require('express');
 
-
 // Importa rotas criadas
 const PrivatesRoutes = require('./src/routes/PrivatesRoutes');
 const PublicRoutes = require('./src/routes/PublicRoutes');
@@ -24,10 +23,6 @@ app.get("/", (request, response) => {
     return response.status(200).send("HomePage");
 });
 
-/* app.get("*", (request, response) => {
-    return response.status(404).send("Página não encontrada");
-}); */
-
 // rotas publicas
 app.use(PublicRoutes);
 // rotas privadas
@@ -36,6 +31,5 @@ app.use(PrivatesRoutes);
 // Escuta eventos
 app.listen(port, host, () => {
     console.log(`Server working in: http://${host}:${port}`);
-    
 });
 

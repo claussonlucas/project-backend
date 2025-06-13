@@ -3,7 +3,6 @@
 
 // importa do sequelize o método DataTypes e o método Model
 const { DataTypes, Model } = require('sequelize');
-const { Sequelize } = require('sequelize');
 
 // faz conexão com o banco de dados e permite criar tabelas
 const connection = require('../config/connection');
@@ -13,8 +12,7 @@ const ProductModel = require('./ProductModel');
 const CategoryModel = require("./CategoryModel");
 
 // cria a classe
-class ProdCategModel extends Model {
-}
+class ProdCategModel extends Model {}
 
 //
 ProdCategModel.init(

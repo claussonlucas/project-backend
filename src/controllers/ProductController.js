@@ -91,9 +91,9 @@ class ProductController {
                     includeTab.x.push({model: ImagesModel, as: 'images', attributes: ["id", ["path", 'content']]},);
                 }
 
-/*                 if (colTab.includes('options')) {
+                if (colTab.includes('options')) {
                     includeTab.x.push({model: OptionModel, as: 'options'},);
-                } */
+                }
             }
             
         }
@@ -124,8 +124,11 @@ class ProductController {
         if (queryOption !== undefined) {
             queryOption = queryOption.split(',');
             console.log("queryOption", queryOption);
+            queryOption = queryOption.toString();
+            console.log("queryOption", queryOption);
             
-            includeTab.x.push({model: OptionModel, as: 'options'},);
+            includeTab.x.push({model: OptionModel, as: 'options',
+                where: {values: queryOption},},);
 
         }
 

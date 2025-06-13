@@ -8,7 +8,6 @@ const express = require('express');
 // Biblioteca Json Web Token
 const jwt = require('jsonwebtoken');
 
-
 // Importa rotas criadas
 const UserRoutes = require("./UserRoutes");
 const CategoryRoutes = require('./CategoryRoutes');
@@ -21,9 +20,7 @@ const PrivatesRoutes = express.Router();
 // Middleware
 PrivatesRoutes.use((request, response, next) => {
     const authHeader = request.headers.authorization;
-    //console.log("authHeader:", authHeader);
     const token = authHeader && authHeader.split(" ")[1]; // Pega só o token após "Bearer"
-    //console.log("token:", token);
     
     let logged = false;
     // process.env.APP_KEY_TOKEN
@@ -39,7 +36,6 @@ PrivatesRoutes.use((request, response, next) => {
     }
     
     next();
-    
 });
 
 // permite usar rotas criadas
