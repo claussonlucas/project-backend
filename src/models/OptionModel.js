@@ -12,9 +12,7 @@ OptionModel.init (
             references: {
                 model: ProductModel,
                 key: 'id'
-            },
-            onUpdate: 'CASCADE',
-            //onDelete: 'CASCADE',
+            }
         },
         title: {
             type: DataTypes.STRING(45),
@@ -58,6 +56,5 @@ OptionModel.init (
         timestamps: false
     }
 )
-
 
 module.exports = OptionModel;

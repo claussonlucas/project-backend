@@ -3,7 +3,6 @@
 
 // importa do sequelize o método DataTypes e o método Model
 const { DataTypes, Model } = require('sequelize');
-const { Sequelize } = require('sequelize');
 
 // faz conexão com o banco de dados e permite criar tabelas
 const connection = require('../config/connection');
@@ -13,9 +12,7 @@ const ProductModel = require('./ProductModel');
 
 // cria a classe
 class ImagesModel extends Model {
-/*     static associate() {
-        ImagesModel.belongsTo(ProductModel, {foreignKey: "product_id"});
-    }; */
+
 }
 
 //
@@ -30,7 +27,7 @@ ImagesModel.init(
                 model: ProductModel,
                 key: 'id'
             },
-            onUpdate: 'CASCADE',
+            //onUpdate: 'CASCADE',
             //onDelete: 'CASCADE',
         },
         // coluna enabled
